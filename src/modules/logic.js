@@ -10,13 +10,18 @@ export class Ship {
     }
 
     isSunk() {
-        if (this.hit === this.length) this.sunk = true
+        if (this.hit === this.length) {
+            this.sunk = true
+            return true
+        }
+        return false
     }
 }
 
 export class Gameboard {
     constructor() {
         this.board = []
+        this.ships = []
         this.generateBoard()
     }
 
@@ -82,9 +87,40 @@ export class Gameboard {
             }
         }
     }
+
+    registerShip(ship) {
+        this.ships.push(ship)
+    }
+
+    canReceiveAttack(cords) {
+        let x = cords[0]
+        let y = cords[1]
+
+        // if cord is null or cords contain a sunken ship return false
+        if (this.board[x][y] === null) return false
+        if (this.board[x][y].sunk === true) return false
+
+        // if cord is not null and ship hasnt sunk return true
+        return true
+    }
+
+    receiveAttack(cords) {
+        let x = cords[0]
+        let y = cords[1]
+        this.board[x][y].hit()
+    }
+
+    allShipSunken() {
+        for (let ship of this.ships) {
+            if (ship.sunk === false) return false
+        }
+        return true
+    }
 }
 
-let game = new Gameboard()
-let ship = new Ship(4, 'ship 1')
-console.log(game.placeShip([0, 6], 'x', ship))
-console.log(game.board)
+export class Player {
+    constructor(name) {
+        this.name = name
+        this.game = new Gameboard()
+    }
+}

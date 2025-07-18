@@ -40,3 +40,20 @@ describe('Gameboard canPlaceShip method', () => {
         expect(game.canPlaceShip([0, 6], 'x', ship)).toBeFalsy()
     })
 })
+
+describe('Gameboard canReceiveAttack method', () => {
+    it('Return false if cords is null or contains a sunken ship', () => {
+        let game = new Gameboard()
+        let ship = new Ship(4, 'ship 1')
+        expect(game.canReceiveAttack([0, 6])).toBeFalsy()
+        game.placeShip([0, 6], 'x', ship)
+        game.board[0][6].sunk = true
+        expect(game.canReceiveAttack([0, 6])).toBeFalsy()
+    })
+    it('Return true if cords is not null and ship hasnt sunk', () => {
+        let game = new Gameboard()
+        let ship = new Ship(4, 'ship 1')
+        game.placeShip([0, 6], 'x', ship) 
+        expect(game.canReceiveAttack([0, 6])).toBeTruthy()
+    }) 
+})

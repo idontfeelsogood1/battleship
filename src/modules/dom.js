@@ -1,19 +1,18 @@
 import {Ship} from '../modules/logic.js'
-import {Gameboard} from '../modules/logic.js'
 import {Player} from '../modules/logic.js'
 
-function populateGameBoard(gameboard) {
+function populateGameBoard(gameboardId) {
     const widthLimit = 10
     const heightLimit = 10
 
-    let board = document.querySelector(gameboard) 
+    let board = document.querySelector(gameboardId) 
 
-    for (let i = 0; i < heightLimit; i++) {
+    for (let x = 0; x < heightLimit; x++) {
         let row = document.createElement('div')
-        for (let j = 0; j < widthLimit; j++) {
+        for (let y = 0; y < widthLimit; y++) {
             let square = document.createElement('div')
-            square.setAttribute('data-x', i)
-            square.setAttribute('data-y', j)
+            square.setAttribute('data-x', x)
+            square.setAttribute('data-y', y)
             row.appendChild(square)
         }
         board.appendChild(row)
@@ -31,6 +30,8 @@ export function newGame() {
     let ship5 = new Ship(2)
     let shipArr = [ship1, ship2, ship3, ship4, ship5]
 
+    let squaresCallbacks = new Map()
+
     player.gameboard.ships = shipArr.slice()
     player.shipToPlace = shipArr.slice()
     computer.gameboard.ships = shipArr.slice()
@@ -40,7 +41,9 @@ export function newGame() {
     populateGameBoard('#computerBoard')
 
     // x axis is the default
-    squareEvent(player, '#playerBoard', 'x')
+    updateSquareEvent(player, '#playerBoard', 'x', squaresCallbacks)
+    // change axis upon click
+    changeAxis(player, '#playerBoard', squaresCallbacks)
 }
 
 function renderShip(cords, shipLength, axis) {
@@ -68,13 +71,13 @@ function renderShip(cords, shipLength, axis) {
             y_current++
         }       
     } 
-
 }
 
-function squareEvent(player, gameboardId, axis) {
+function updateSquareEvent(player, gameboardId, axis, squaresCallbacks) {
     let squares = document.querySelectorAll(`${gameboardId} > div > div`) // nodelist
+    
     for (let square of squares) {
-        square.addEventListener('click', () => {
+        let callback = () => {
             let x = parseInt(square.getAttribute('data-x'))
             let y = parseInt(square.getAttribute('data-y'))
             let cords = [x, y]
@@ -89,6 +92,35 @@ function squareEvent(player, gameboardId, axis) {
                     player.shipToPlace.shift()
                 }
             }
-        })
+        }
+
+        // remove current square previous callback
+        if (squaresCallbacks.has(square)) {
+            square.removeEventListener('click', squaresCallbacks.get(square))
+        }
+
+        // store current square callback
+        squaresCallbacks.set(square, callback)
+        square.addEventListener('click', callback)
     }
+}
+
+function changeAxis(player, gameboardId, squaresCallbacks) {
+    let btn = document.querySelector('#rotate-btn')
+    btn.addEventListener('click', () => {
+        if (btn.value === 'horizontal') {
+            let axis = 'y'
+            btn.value = 'vertical'
+            btn.textContent = 'Vertical'
+            updateSquareEvent(player, gameboardId, axis, squaresCallbacks)
+            return
+        }
+        if (btn.value === 'vertical') {
+            let axis = 'x'
+            btn.value = 'horizontal'
+            btn.textContent = 'Horizontal'
+            updateSquareEvent(player, gameboardId, axis, squaresCallbacks)
+            return
+        }
+    })
 }

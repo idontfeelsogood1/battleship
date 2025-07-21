@@ -1,4 +1,4 @@
 import "./styles.css"
 import * as dom from "./modules/dom.js" 
 
-dom.populateGameBoard()
+dom.newGame()

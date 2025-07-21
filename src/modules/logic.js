@@ -2,16 +2,14 @@ export class Ship {
     constructor(length) {
         this.length = length
         this.hit = 0
-        this.sunk = false
     }
 
-    hit() {
+    registerHit() {
         this.hit += 1
     }
 
     isSunk() {
         if (this.hit === this.length) {
-            this.sunk = true
             return true
         }
         return false
@@ -102,7 +100,7 @@ export class Gameboard {
 
         // if cord is null or cords contain a sunken ship return false
         if (this.board[x][y] === null) return false
-        if (this.board[x][y].sunk === true) return false
+        if (this.board[x][y].isSunk()) return false
 
         // if cord is not null and ship hasnt sunk return true
         return true
@@ -111,12 +109,12 @@ export class Gameboard {
     receiveAttack(cords) {
         let x = cords[0]
         let y = cords[1]
-        this.board[x][y].hit()
+        this.board[x][y].registerHit()
     }
 
     allShipSunken() {
         for (let ship of this.ships) {
-            if (ship.sunk === false) return false
+            if (ship.isSunk() === false) return false
         }
         return true
     }

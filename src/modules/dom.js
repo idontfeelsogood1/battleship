@@ -19,6 +19,95 @@ function populateGameBoard(gameboardId) {
     }
 }
 
+function startGame(player, computer, playerGameboardId, computerGameboardId,squaresCallbacks) {
+    // check player's shipToPlace
+    if (player.shipToPlace.length !== 0) {
+        alert('Place all ships first!')
+        return
+    }
+
+    // disable axis change button and disable start button
+    document.querySelector('#rotate-btn').disabled = true
+    document.querySelector('#start-btn').disabled = true
+
+    // remove player's square listeners
+    let squares = document.querySelectorAll(`${playerGameboardId} > div > div`) // nodelist
+    for (let square of squares) {
+        if (squaresCallbacks.has(square)) {
+            square.removeEventListener('click', squaresCallbacks.get(square))
+        }
+    }
+
+    let computerSquares = document.querySelectorAll(`${computerGameboardId} > div > div`) // nodelist
+    for (let square of computerSquares) {
+        square.addEventListener('click', () => {
+            // player attacked computer
+            let computer_x = parseInt(square.getAttribute('data-x'))
+            let computer_y = parseInt(square.getAttribute('data-y'))
+            let cords = [computer_x, computer_y]
+
+            if (computer.gameboard.canReceiveAttack(cords)) {
+                computer.gameboard.receiveAttack(cords)
+                square.style.backgroundColor = 'red'
+                square.disabled = true
+                if (computer.gameboard.allShipSunken()) {
+                    alert('Player Won!')
+                    return
+                }
+            } else {
+                square.style.backgroundColor = 'gray'
+                square.disabled = true
+            }
+
+            // computer attacks player
+            do {
+                var playerCords = computerMoves()
+                var playerSquare = document.querySelector(`${playerGameboardId} [data-x="${playerCords[0]}"][data-y="${playerCords[1]}"]`)
+            } while (playerSquare.disabled)
+           
+            if (player.gameboard.canReceiveAttack(playerCords)) {
+                player.gameboard.receiveAttack(playerCords)  
+                playerSquare.style.backgroundColor = 'red'
+                playerSquare.disabled = true
+                if (player.gameboard.allShipSunken()) {
+                    alert('Computer Won!')
+                    return
+                }
+            } else {
+                playerSquare.style.backgroundColor = 'gray'
+                playerSquare.disabled = true
+            }
+        })
+    }
+}
+
+function computerMoves() {
+    let max = 10
+    let min = 0
+    let x = Math.floor(Math.random() * (max - min) + min);
+    let y = Math.floor(Math.random() * (max - min) + min);
+
+    return [x, y]
+}
+
+function generateRandomAxis(max) {
+    if (Math.floor(Math.random() * max) === 0) return 'x'
+    else return 'y'
+}
+
+function generateComputerShips(computer) {
+    while (computer.shipToPlace.length !== 0) {
+        let cords = computerMoves()
+        let ship = computer.shipToPlace[0]
+        let axis = generateRandomAxis(2)
+
+        if (computer.gameboard.canPlaceShip(cords, axis, ship)) {
+            computer.gameboard.placeShip(cords, axis, ship)
+            computer.shipToPlace.shift()
+        }
+    }
+}
+
 export function newGame() {
     let player = new Player('player')
     let computer = new Player('computer')
@@ -39,11 +128,18 @@ export function newGame() {
 
     populateGameBoard('#playerBoard')
     populateGameBoard('#computerBoard')
+    // generate computer's ship
+    generateComputerShips(computer)
 
     // x axis is the default
     updateSquareEvent(player, '#playerBoard', 'x', squaresCallbacks)
-    // change axis upon click
+    // change axis upon change axis click
     changeAxis(player, '#playerBoard', squaresCallbacks)
+    // start the game when start button clicked
+    document.querySelector('#start-btn')
+    .addEventListener('click', () => {
+        startGame(player, computer, '#playerBoard', '#computerBoard', squaresCallbacks)
+    })
 }
 
 function renderShip(cords, shipLength, axis) {

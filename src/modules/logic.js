@@ -33,59 +33,63 @@ export class Gameboard {
     }
 
     canPlaceShip(cords, axis, ship) {
-        const heightLimit = 10
-        const widthLimit = 10
-
         let x = cords[0]
         let y = cords[1]
 
         // check if cords is out of bound
         if (!(x >= 0 && x < 10) || !(y >= 0 && y < 10)) return false
-        // if theres already a ship at that cord
-        if (this.board[x][y] !== null) return false
 
         // if x direction
         if (axis === 'x') {
-            // find the available index for ship
-            let length = widthLimit - y
-            // check if ship doesnt fit the board
-            if (ship.length > length) return false
-            // if ship fits the board
-            return true  
-        } 
-        // if y direction
-        if (axis === 'y') {
-            // find the available index for ship
-            let length = heightLimit - x
-            // check if ship doesnt fit the board
-            if (ship.length > length) return false
+            // check if current direction already has a ship or out of bounds
+            let x_current = x
+            if (x + ship.length > 10) return false
+            for (let i = 0; i < ship.length; i++) { 
+                if (this.board[x_current][y] !== null)  return false
+                x_current++
+            }
             // if ship fits the board
             return true 
         }
+
+        // if y direction
+        if (axis === 'y') {
+            // check if current direction already has a ship or out of bounds
+            let y_current = y
+            if (y + ship.length > 10) return false
+            for (let i = 0; i < ship.length; i++) {
+                if (this.board[x][y_current] !== null) return false 
+                y_current++
+            }
+            // if ship fits the board
+            return true  
+        } 
     }
 
     placeShip(cords, axis, ship) {
         let x = cords[0]
         let y = cords[1]
-        
+
         // if x direction
         if (axis === 'x') {
             // place ship horizontally
-            let y_current = y
-            for (let i = 0; i < ship.length; i++) {
-                this.board[x][y_current] = ship
-                y_current++
-            }       
-        } 
-        // if y direction
-        if (axis === 'y') {
-            // place ship vertically
             let x_current = x
             for (let i = 0; i < ship.length; i++) {
                 this.board[x_current][y] = ship
                 x_current++
             }
         }
+
+        // if x direction
+        if (axis === 'y') {
+            // place ship vertically
+            let y_current = y
+            for (let i = 0; i < ship.length; i++) {
+                this.board[x][y_current] = ship
+                y_current++
+            }       
+        } 
+
     }
 
     registerShip(ship) {
@@ -121,6 +125,7 @@ export class Gameboard {
 export class Player {
     constructor(name) {
         this.name = name
-        this.game = new Gameboard()
+        this.shipToPlace = []
+        this.gameboard = new Gameboard()
     }
 }

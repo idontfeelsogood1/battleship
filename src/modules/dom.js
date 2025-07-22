@@ -19,7 +19,7 @@ function populateGameBoard(gameboardId) {
     }
 }
 
-function startGame(player, computer, playerGameboardId, computerGameboardId,squaresCallbacks) {
+function startGame(player, computer, playerGameboardId, computerGameboardId, squaresCallbacks, computerSquareCallbacks) {
     // check player's shipToPlace
     if (player.shipToPlace.length !== 0) {
         alert('Place all ships first!')
@@ -40,7 +40,7 @@ function startGame(player, computer, playerGameboardId, computerGameboardId,squa
 
     let computerSquares = document.querySelectorAll(`${computerGameboardId} > div > div`) // nodelist
     for (let square of computerSquares) {
-        square.addEventListener('click', () => {
+        let callback = () => {
             // player attacked computer
             let computer_x = parseInt(square.getAttribute('data-x'))
             let computer_y = parseInt(square.getAttribute('data-y'))
@@ -49,14 +49,15 @@ function startGame(player, computer, playerGameboardId, computerGameboardId,squa
             if (computer.gameboard.canReceiveAttack(cords)) {
                 computer.gameboard.receiveAttack(cords)
                 square.style.backgroundColor = 'red'
-                square.disabled = true
+                square.removeEventListener('click', computerSquareCallbacks.get(square))
                 if (computer.gameboard.allShipSunken()) {
                     alert('Player Won!')
+                    window.location.reload()
                     return
                 }
             } else {
                 square.style.backgroundColor = 'gray'
-                square.disabled = true
+                square.removeEventListener('click', computerSquareCallbacks.get(square))
             }
 
             // computer attacks player
@@ -71,13 +72,17 @@ function startGame(player, computer, playerGameboardId, computerGameboardId,squa
                 playerSquare.disabled = true
                 if (player.gameboard.allShipSunken()) {
                     alert('Computer Won!')
+                    window.location.reload()
                     return
                 }
             } else {
                 playerSquare.style.backgroundColor = 'gray'
                 playerSquare.disabled = true
             }
-        })
+        }
+
+        square.addEventListener('click', callback)
+        computerSquareCallbacks.set(square, callback)
     }
 }
 
@@ -112,19 +117,29 @@ export function newGame() {
     let player = new Player('player')
     let computer = new Player('computer')
 
-    let ship1 = new Ship(5)
-    let ship2 = new Ship(4)
-    let ship3 = new Ship(3)
-    let ship4 = new Ship(3)
-    let ship5 = new Ship(2)
-    let shipArr = [ship1, ship2, ship3, ship4, ship5]
+    const playerShips = [
+        new Ship(5),
+        new Ship(4),
+        new Ship(3),
+        new Ship(3),
+        new Ship(2),
+    ];
+
+    const computerShips = [
+        new Ship(5),
+        new Ship(4),
+        new Ship(3),
+        new Ship(3),
+        new Ship(2),
+    ];
 
     let squaresCallbacks = new Map()
+    let computerSquareCallbacks = new Map()
 
-    player.gameboard.ships = shipArr.slice()
-    player.shipToPlace = shipArr.slice()
-    computer.gameboard.ships = shipArr.slice()
-    computer.shipToPlace = shipArr.slice()
+    player.gameboard.ships = playerShips.slice()
+    player.shipToPlace = playerShips.slice()
+    computer.gameboard.ships = computerShips.slice()
+    computer.shipToPlace = computerShips.slice()
 
     populateGameBoard('#playerBoard')
     populateGameBoard('#computerBoard')
@@ -138,7 +153,7 @@ export function newGame() {
     // start the game when start button clicked
     document.querySelector('#start-btn')
     .addEventListener('click', () => {
-        startGame(player, computer, '#playerBoard', '#computerBoard', squaresCallbacks)
+        startGame(player, computer, '#playerBoard', '#computerBoard', squaresCallbacks, computerSquareCallbacks)
     })
 }
 

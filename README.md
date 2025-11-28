@@ -1,6 +1,6 @@
 # Battleship
 
-A browser-based implementation of the classic Battleship board game. This project demonstrates Object-Oriented Programming (OOP) in JavaScript, Test-Driven Development (TDD) using Jest, and a clean separation between game logic and the DOM.
+A browser-based implementation of the classic Battleship board game. This project is made to learn Object-Oriented Programming (OOP) in JavaScript, Test-Driven Development (TDD) using Jest, and organizing clean separation of concerns (between game logic and the DOM).
 
 <img width="1903" height="855" alt="image" src="https://github.com/user-attachments/assets/b91b42c2-4af8-47b3-9e9c-4327e8126815" />
 
